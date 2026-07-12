@@ -1,11 +1,9 @@
-# ==========================================================
+
 # Clustrix - Customer Segmentation
 # Train Model
-# ==========================================================
 
-# =========================
-# Import Libraries
-# =========================
+
+
 
 import pandas as pd
 import numpy as np
@@ -16,9 +14,8 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.decomposition import PCA
 
 
-# =========================
+
 # Load Dataset
-# =========================
 
 df = pd.read_csv("dataset/smartcart_customers.csv")
 
@@ -30,38 +27,25 @@ print("\nDataset Shape :", df.shape)
 print(df.head())
 
 
-# =========================
 # Check Missing Values
-# =========================
 
 print("\nMissing Values")
 print(df.isnull().sum())
 
 
-# ==========================================================
 # DATA CLEANING
-# ==========================================================
-
 # Fill missing Income values with median
 
 df["Income"] = df["Income"].fillna(df["Income"].median())
 
-
-# ==========================================================
 # FEATURE ENGINEERING
-# ==========================================================
 
-# -------------------------
 # Age
-# -------------------------
-
 df["Age"] = 2026 - df["Year_Birth"]
 
 
-# -------------------------
-# Customer Tenure
-# -------------------------
 
+# Customer Tenure
 df["Dt_Customer"] = pd.to_datetime(
     df["Dt_Customer"],
     dayfirst=True
@@ -74,10 +58,7 @@ df["Customer_Tenure_Days"] = (
 ).dt.days
 
 
-# -------------------------
 # Total Spending
-# -------------------------
-
 df["Total_Spending"] = (
     df["MntWines"]
     + df["MntFruits"]
@@ -87,21 +68,13 @@ df["Total_Spending"] = (
     + df["MntGoldProds"]
 )
 
-
-# -------------------------
 # Total Children
-# -------------------------
-
 df["Total_Children"] = (
     df["Kidhome"]
     + df["Teenhome"]
 )
 
-
-# -------------------------
 # Education
-# -------------------------
-
 df["Education"] = df["Education"].replace({
     "Basic": "Undergraduate",
     "2n Cycle": "Undergraduate",
@@ -110,11 +83,7 @@ df["Education"] = df["Education"].replace({
     "PhD": "Postgraduate"
 })
 
-
-# -------------------------
 # Living Status
-# -------------------------
-
 df["Living_With"] = df["Marital_Status"].replace({
     "Married": "Partner",
     "Together": "Partner",
@@ -125,11 +94,7 @@ df["Living_With"] = df["Marital_Status"].replace({
     "YOLO": "Alone"
 })
 
-
-# ==========================================================
 # Remove Unnecessary Columns
-# ==========================================================
-
 columns_to_drop = [
     "ID",
     "Year_Birth",
@@ -149,10 +114,7 @@ df_cleaned = df.drop(columns=columns_to_drop)
 
 print("\nDataset Shape After Cleaning :", df_cleaned.shape)
 
-
-# ==========================================================
 # OUTLIER REMOVAL
-# ==========================================================
 
 print("\nDataset Size Before Removing Outliers :", len(df_cleaned))
 
@@ -162,13 +124,8 @@ df_cleaned = df_cleaned[df_cleaned["Income"] < 600000]
 print("Dataset Size After Removing Outliers :", len(df_cleaned))
 
 
-# ==========================================================
-# EXPLORATORY DATA ANALYSIS (EDA)
-# ==========================================================
-
-# -------------------------
+# EXPLORATORY DATA ANALYSIS
 # Pair Plot
-# -------------------------
 
 eda_columns = [
     "Income",
@@ -182,10 +139,7 @@ eda_columns = [
 sns.pairplot(df_cleaned[eda_columns])
 plt.show()
 
-
-# -------------------------
 # Correlation Heatmap
-# -------------------------
 
 corr = df_cleaned.corr(numeric_only=True)
 
@@ -201,10 +155,7 @@ sns.heatmap(
 plt.title("Correlation Heatmap")
 plt.show()
 
-
-# ==========================================================
 # ONE-HOT ENCODING
-# ==========================================================
 
 categorical_columns = [
     "Education",
@@ -232,10 +183,7 @@ df_encoded = pd.concat(
 
 print("\nEncoded Dataset Shape :", df_encoded.shape)
 
-
-# ==========================================================
 # FEATURE SCALING
-# ==========================================================
 
 X = df_encoded.copy()
 
@@ -246,9 +194,9 @@ X_scaled = scaler.fit_transform(X)
 print("\nFeature Scaling Completed")
 
 
-# ==========================================================
+
 # PCA
-# ==========================================================
+
 
 pca = PCA(n_components=3)
 
@@ -258,9 +206,8 @@ print("\nExplained Variance Ratio")
 print(pca.explained_variance_ratio_)
 
 
-# -------------------------
 # PCA Visualization
-# -------------------------
+
 
 fig = plt.figure(figsize=(10, 7))
 
@@ -280,9 +227,8 @@ ax.set_title("3D PCA Projection")
 
 plt.show()
 
-# ==========================================================
 # ELBOW METHOD
-# ==========================================================
+
 
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
@@ -341,9 +287,8 @@ plt.legend()
 plt.show()
 
 
-# ==========================================================
+
 # SILHOUETTE SCORE
-# ==========================================================
 
 scores = []
 
@@ -385,9 +330,8 @@ plt.ylabel("Silhouette Score")
 plt.show()
 
 
-# ==========================================================
 # K-MEANS TRAINING
-# ==========================================================
+
 
 print("\nTraining Final KMeans Model...")
 
@@ -402,9 +346,9 @@ labels_kmeans = kmeans.fit_predict(X_pca)
 print("Model Training Completed.")
 
 
-# ==========================================================
+
 # CLUSTER VISUALIZATION
-# ==========================================================
+
 
 fig = plt.figure(figsize=(10,7))
 
@@ -432,10 +376,8 @@ plt.colorbar(
 
 plt.show()
 
-
-# ==========================================================
 # CLUSTER SUMMARY
-# ==========================================================
+
 
 X["Cluster"] = labels_kmeans
 
@@ -467,9 +409,8 @@ plt.title("Income vs Spending by Cluster")
 plt.show()
 
 
-# ==========================================================
+
 # SAVE MODELS
-# ==========================================================
 
 os.makedirs("model", exist_ok=True)
 
@@ -501,9 +442,7 @@ joblib.dump(
 print("\nModels Saved Successfully.")
 
 
-# ==========================================================
 # EXPORT CLUSTERED DATASET
-# ==========================================================
 
 df["Cluster"] = labels_kmeans
 
